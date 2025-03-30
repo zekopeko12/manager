@@ -1,20 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
+#include "data.h"
 #include <string.h>
-
-typedef struct Subject{
-    uint16_t grade;
-    char* name;
-} SUBJECT;
-
-typedef struct Student{
-    SUBJECT* subjects[6];
-    int age;
-    char* name;
-    bool passed;
-} STUDENT;
 
 void printStudents(STUDENT *students[], int count){
     printf("----\n");
@@ -31,34 +16,29 @@ void printStudents(STUDENT *students[], int count){
 }
 
 int main(int argc, char *argv[]) {
-    STUDENT* students[6];
-    
-    for(int i=0; i<6; i++){
-        students[i] = (STUDENT*)malloc(sizeof(STUDENT));
-    
-        students[i]->age = 19;
-        students[i]->name = (char*)malloc(14);
-        strcpy(students[i]->name, "Antonio Zeko");
-        students[i]->passed = true;
+    int choice;
 
-        for(int j=0; j<6; j++){
-            students[i]->subjects[j] = (SUBJECT*)malloc(sizeof(SUBJECT));
-            students[i]->subjects[j]->grade = 5;
+    STUDENT students[6];
 
-            students[i]->subjects[j]->name = (char*)malloc(8);
-            strcpy(students[i]->subjects[j]->name, "predmet");
+    while(true){
+        printf("\nHello!");
+        printf("\nChoose what you would like to do:");
+        printf("\n1. List the students");
+        printf("\n2. Input Students");
+        printf("\n3. Exit");
+
+        switch(choice){
+            case 1:
+                readFromFile(students, 6);
+                break;
+            case 2:
+                printf("\nHow many would you like to input?");
+                int count = 0;
+                scanf("%d", &count);
+                writeToFile(count);
+                break;
+            case 3:
+                exit(EXIT_SUCCESS);
         }
     }
-
-    FILE* db = fopen("data.db", "wb");
-
-    fwrite(students, sizeof(STUDENT), 6, db);
-    fclose(db);    
-
-    db = fopen("data.db", "rb");
-
-    STUDENT student[6];
-    fread(student, sizeof(STUDENT), 6, db);
-
-    printf("%d", &student[0].age);
 }
