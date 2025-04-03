@@ -25,20 +25,20 @@ int main(int argc, char *argv[]) {
         printf("\nChoose what you would like to do:");
         printf("\n1. List the students");
         printf("\n2. Input Students");
-        printf("\n3. Exit");
+        printf("\n3. Exit\n");
 
-        switch(choice){
-            case 1:
-                readFromFile(students, 6);
-                break;
-            case 2:
-                printf("\nHow many would you like to input?");
-                int count = 0;
-                scanf("%d", &count);
-                writeToFile(count);
-                break;
-            case 3:
-                exit(EXIT_SUCCESS);
-        }
+        scanf("%d", &choice);
+        
+        if(choice == 3){
+            printf("Exiting program...");
+            exit(EXIT_SUCCESS);
+        } else if(choice == 1){
+            //readFromFile();
+        } else if(choice == 2){
+            int count = 0;
+            printf("\nHow many would you like to input? ");
+            scanf("%d", &count);
+            writeToFile(count);            
+        }        
     }
 }
