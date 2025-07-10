@@ -1,24 +1,11 @@
 #include "data.h"
 #include <string.h>
 
-void printStudents(STUDENT *students[], int count){
-    printf("----\n");
-    for(int i=0; i<count; i++){
-        printf("%s \t %d \t %s\n", students[i]->name, students[i]->age, students[i]->passed ? "true" : "false");
-
-        for(int j=0; j < 6; j++){
-            printf("Subject: %s\n", students[i]->subjects[j]->name);
-            printf("Grade: %d\n", students[i]->subjects[j]->grade);
-        }
-
-        printf("----\n");
-    }
-}
-
 int main(int argc, char *argv[]) {
     int choice;
-
-    STUDENT students[6];
+    printf("Starting...");
+    TABLE* table = db_open("data.db");
+    printf("Opened table!");
 
     while(true){
         printf("\nHello!");
@@ -31,14 +18,13 @@ int main(int argc, char *argv[]) {
         
         if(choice == 3){
             printf("Exiting program...");
+            db_close(table);
             exit(EXIT_SUCCESS);
         } else if(choice == 1){
-            //readFromFile();
+            table_select(table);
         } else if(choice == 2){
-            int count = 0;
-            printf("\nHow many would you like to input? ");
-            scanf("%d", &count);
-            writeToFile(count);            
+            STUDENT* student = make_student();
+            table_insert(table, student);           
         }        
     }
 }
