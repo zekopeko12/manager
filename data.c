@@ -40,14 +40,14 @@ void serialize_row(STUDENT* source, void* destination){
 
     memcpy(destination + STUDENT_AGE_OFFSET, &(source->age), STUDENT_AGE_SIZE);
     memcpy(destination + STUDENT_SEMESTER_COUNT_OFFSET, &(source->semester_count), STUDENT_SEMESTER_COUNT_SIZE);
-    memcpy(destination + STUDENT_NAME_OFFSET, &(source->name), STUDENT_NAME_SIZE);
+    memcpy(destination + STUDENT_NAME_OFFSET, source->name, STUDENT_NAME_SIZE);
     memcpy(destination + STUDENT_FIXED_SIZE, source->semesters, semester_size);
 }
 
 void deserialize_row(void* source, STUDENT* destination){
     memcpy(&(destination->age), source + STUDENT_AGE_OFFSET,  STUDENT_AGE_SIZE);
     memcpy(&(destination->semester_count), source + STUDENT_SEMESTER_COUNT_OFFSET,  STUDENT_SEMESTER_COUNT_SIZE);
-    memcpy(&(destination->name), source + STUDENT_NAME_OFFSET, STUDENT_NAME_SIZE);
+    memcpy(destination->name, source + STUDENT_NAME_OFFSET, STUDENT_NAME_SIZE);
     
     if(destination->semester_count > MAX_SEMESTERS || destination->semester_count <= 0){
         printf("Invalid semester count(deserialization): %d\n", destination->semester_count);
@@ -117,18 +117,6 @@ void flush_page(PAGER* pager, int page_num, int size){
     }
 }
 
-// void close_pager(PAGER* pager){
-//     for(int i=0; i<pager->num_pages; i++){
-//         if(pager->pages[i] != NULL){
-//             flush_page(pager, i, PAGE_SIZE);
-//             free(pager->pages[i]);
-//         }
-//     }
-
-//     fclose(pager->file);
-//     free(pager);
-// }
-
 TABLE* db_open(const char* filename){
     TABLE* table = (TABLE*)malloc(sizeof(TABLE));
     if(table == NULL){
@@ -136,8 +124,9 @@ TABLE* db_open(const char* filename){
         exit(EXIT_FAILURE);
     }
 
-    table->num_rows = 0;
     table->pager = open_pager(filename);
+    int num_rows = table->pager->file_length / ROW_SIZE;
+    table->num_rows = num_rows;
 
     return table;
 }
@@ -212,8 +201,16 @@ void* row_slot(TABLE* table, int row_num){
 }
 
 void print_student(STUDENT* student){
-    printf("\nName: %s\t|\t", student->name);
-    printf("Age: %d", student->age);
+    printf("---------------\n");
+    
+    printf("\nName:%s | Age: %d", student->name, student->age);
+
+    for(int i=0; i<student->semester_count; i++){
+        printf("\n\tSemester: %d (Passed: %s)", i + 1, student->semesters[i].passed ? "Yes" : "No");
+        for(int j=0; j<SUBJECTS_PER_SEMESTER; j++){
+            printf("\n\tSubject name: %s | Grade: %d\n", student->semesters[i].subjects[j].name, student->semesters[i].subjects[j].grade);
+        }
+    }
 }
 
 void table_insert(TABLE* table, STUDENT* student){

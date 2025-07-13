@@ -6,9 +6,9 @@ int main(int argc, char *argv[]) {
     printf("Starting...");
     TABLE* table = db_open("data.db");
     printf("Opened table!");
+    printf("\nHello!");
 
     while(true){
-        printf("\nHello!");
         printf("\nChoose what you would like to do:");
         printf("\n1. List the students");
         printf("\n2. Input Students");
