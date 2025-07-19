@@ -25,12 +25,14 @@
 
 #define STUDENT_AGE_SIZE                sizeof(int)
 #define STUDENT_SEMESTER_COUNT_SIZE     sizeof(int)
+#define STUDENT_ID_SIZE                 sizeof(int)
 #define STUDENT_NAME_SIZE               60
 
 #define STUDENT_AGE_OFFSET              0
 #define STUDENT_SEMESTER_COUNT_OFFSET   (STUDENT_AGE_OFFSET + STUDENT_AGE_SIZE)
 #define STUDENT_NAME_OFFSET             (STUDENT_SEMESTER_COUNT_OFFSET + STUDENT_SEMESTER_COUNT_SIZE)
-#define STUDENT_FIXED_SIZE              (STUDENT_NAME_OFFSET + STUDENT_NAME_SIZE)
+#define STUDENT_ID_OFFSET               (STUDENT_NAME_OFFSET + STUDENT_NAME_SIZE)
+#define STUDENT_FIXED_SIZE              (STUDENT_ID_OFFSET + STUDENT_ID_SIZE)
 
 typedef struct Subject{
     char name[SUBJECT_NAME_SIZE];
@@ -43,8 +45,9 @@ typedef struct Semester{
 }SEMESTER;
 
 typedef struct Student{
-    int age;
-    int semester_count;
+    uint32_t id;
+    uint32_t age;
+    uint32_t semester_count;
     char name[STUDENT_NAME_SIZE];
     SEMESTER* semesters;
 } STUDENT;
@@ -80,4 +83,6 @@ STUDENT* make_student();
 SEMESTER* make_semesters(STUDENT* student);
 void to_upper_str(char* dest, const char* src);
 void search_for_student(TABLE* table, char* student_to_find);
+uint32_t get_next_student_id(TABLE* table);
+void edit_student(TABLE* table, uint32_t student_id);
 #endif

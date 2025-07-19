@@ -41,6 +41,7 @@ void serialize_row(STUDENT* source, void* destination){
     memcpy(destination + STUDENT_AGE_OFFSET, &(source->age), STUDENT_AGE_SIZE);
     memcpy(destination + STUDENT_SEMESTER_COUNT_OFFSET, &(source->semester_count), STUDENT_SEMESTER_COUNT_SIZE);
     memcpy(destination + STUDENT_NAME_OFFSET, source->name, STUDENT_NAME_SIZE);
+    memcpy(destination + STUDENT_ID_OFFSET, &(source->id), STUDENT_ID_SIZE);
     memcpy(destination + STUDENT_FIXED_SIZE, source->semesters, semester_size);
 }
 
@@ -48,6 +49,7 @@ void deserialize_row(void* source, STUDENT* destination){
     memcpy(&(destination->age), source + STUDENT_AGE_OFFSET,  STUDENT_AGE_SIZE);
     memcpy(&(destination->semester_count), source + STUDENT_SEMESTER_COUNT_OFFSET,  STUDENT_SEMESTER_COUNT_SIZE);
     memcpy(destination->name, source + STUDENT_NAME_OFFSET, STUDENT_NAME_SIZE);
+    memcpy(&(destination->id), source + STUDENT_ID_OFFSET, STUDENT_ID_SIZE);
     
     if(destination->semester_count > MAX_SEMESTERS || destination->semester_count <= 0){
         printf("Invalid semester count(deserialization): %d\n", destination->semester_count);
@@ -203,7 +205,7 @@ void* row_slot(TABLE* table, int row_num){
 void print_student(STUDENT* student){
     printf("\n---------------------------------------------\n");
     
-    printf("\nName:%s | Age: %d", student->name, student->age);
+    printf("\nID: %d | Name:%s | Age: %d", student->id, student->name, student->age);
 
     for(int i=0; i<student->semester_count; i++){
         printf("\n\tSemester: %d (Passed: %s)", i + 1, student->semesters[i].passed ? "Yes" : "No");
@@ -223,6 +225,7 @@ void table_insert(TABLE* table, STUDENT* student){
     int row_num = table->num_rows;
     void* page = get_page(table->pager, row_page(row_num));
     void* destination = page + (row_offset(row_num) * ROW_SIZE);
+    student->id = get_next_student_id(table);
     serialize_row(student, destination);
 
     table->num_rows++;
@@ -313,4 +316,126 @@ void search_for_student(TABLE* table, char* student_to_find){
     if(!found_student){
         printf("Such a student doesnt exist");
     }
+}
+
+uint32_t get_next_student_id(TABLE* table){
+    uint32_t max_id = 0;
+    STUDENT student;
+    for(int i=0; i<table->num_rows; i++){
+        deserialize_row(row_slot(table, i), &student);
+        if(student.id > max_id){
+            max_id = student.id;
+        }
+
+        free(student.semesters);
+    }
+
+    return max_id + 1;
+}
+
+void edit_student(TABLE* table, uint32_t student_id){
+    if(student_id < 0 || student_id >= table->num_rows){
+        printf("Invalid student ID.\n");
+        return;
+    }
+
+    STUDENT editing_student;
+    deserialize_row(row_slot(table, student_id), &editing_student);
+
+    int choice;
+    do{
+        printf("\nCurrently editing student: %s with id: %d\n", editing_student.name, editing_student.id);
+        printf("1. Edit student name\n");
+        printf("2. Edit student age\n");
+        printf("3. Edit subject\n");
+        printf("0. Save and exit.\n");
+        scanf("%d", &choice);
+
+        switch(choice){
+            case 1:
+                printf("\nInput new student name: ");
+                scanf("%s", editing_student.name);
+                break;
+
+            case 2:
+                printf("\nInput new student age: ");
+                scanf("%d", &editing_student.age);
+                break;
+            
+            case 3:
+                print_student(&editing_student);
+                uint32_t semester_index = 1;
+
+                if(editing_student.semester_count > 1){
+                    printf("\nWhat semester would you like to choose? ");
+                    scanf("%d", &semester_index);
+                }
+                
+                uint32_t subject_index;
+                printf("\nSelect the subject youd like to edit (1-6): ");
+                scanf("%d", &subject_index);
+
+                SUBJECT* edited_subject = &editing_student.semesters[semester_index - 1].subjects[subject_index - 1];
+
+                printf("\nCurrently editing: %s (Grade: %d)", edited_subject->name, edited_subject->grade);
+                char new_subject_name[60];
+                char new_subject_grade[sizeof(uint32_t)];
+
+                printf("\nEnter new subject name (leave empty if you want it left unchanged)");
+                
+                //C je glup i ostavi \n od prethodnog scanf()
+                int c;
+                while ((c = getchar()) != '\n' && c != EOF);
+
+                fgets(new_subject_name, sizeof(new_subject_name), stdin);
+                new_subject_name[strcspn(new_subject_name, "\n")] = '\0';
+
+                if(strlen(new_subject_name) == 0){
+                    printf("\nName unchanged.");
+                }
+
+                if(strlen(new_subject_name) > 0){
+                    strncpy(edited_subject->name, new_subject_name, SUBJECT_NAME_SIZE - 1);
+                    edited_subject->name[SUBJECT_NAME_SIZE - 1] = '\0';
+                }
+
+                int valid_input = 0;
+
+                do{
+                    printf("\nEnter new subject grade (leave empty if you want it left unchanged)");
+                    fgets(new_subject_grade, sizeof(new_subject_grade), stdin);
+                    new_subject_grade[strcspn(new_subject_grade, "\n")] = '\0';
+    
+                    if(strlen(new_subject_grade) == 0){
+                        printf("\nGrade unchanged.");
+                        break;
+                    }
+    
+                    char* endptr;
+                    long parsed_grade = strtol(new_subject_grade, &endptr, 10);
+
+                    if(endptr == new_subject_grade || parsed_grade < 1 || parsed_grade > 5){
+                        printf("\nInvalid grade. Input a grade in range [1-5]");
+                    } else{
+                        edited_subject->grade = (uint32_t)parsed_grade;
+                        valid_input = 1;
+                    }
+
+                } while(!valid_input);
+
+                flush_page(table->pager, student_id, PAGE_SIZE);
+
+                break;
+
+            case 0:
+                break;
+
+            default:
+                printf("Invalid choice.\n");
+        } 
+
+    } while(choice != 0);
+
+    serialize_row(&editing_student, row_slot(table, student_id));
+    free(editing_student.semesters);
 }

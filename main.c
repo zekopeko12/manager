@@ -13,7 +13,8 @@ int main(int argc, char *argv[]) {
         printf("\n1. List the students");
         printf("\n2. Input students");
         printf("\n3. Search for student");
-        printf("\n4. Exit\n");
+        printf("\n4. Edit student");
+        printf("\n5. Exit\n");
 
         scanf("%d", &choice);
 
@@ -28,17 +29,28 @@ int main(int argc, char *argv[]) {
                 break;
 
             case 3:
-                char student_to_search_for[59];
+                char student_to_search_for[60];
                 printf("What student would you like to look for?\n");
                 scanf("%s", student_to_search_for);
                 search_for_student(table, student_to_search_for);
                 break;
 
             case 4:
+                uint32_t editing_student_id;
+                printf("What student would you like to edit(ID)? ");
+                scanf("%d", &editing_student_id);
+                editing_student_id -= 1;
+                edit_student(table, editing_student_id);
+                break;
+
+            case 5:
                 printf("Exiting program...");
                 db_close(table);
                 exit(EXIT_SUCCESS);
                 break;
+
+            default:
+                printf("Invalid choice.\n");
         }
     }
 }
