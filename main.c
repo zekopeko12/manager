@@ -11,20 +11,34 @@ int main(int argc, char *argv[]) {
     while(true){
         printf("\nChoose what you would like to do:");
         printf("\n1. List the students");
-        printf("\n2. Input Students");
-        printf("\n3. Exit\n");
+        printf("\n2. Input students");
+        printf("\n3. Search for student");
+        printf("\n4. Exit\n");
 
         scanf("%d", &choice);
-        
-        if(choice == 3){
-            printf("Exiting program...");
-            db_close(table);
-            exit(EXIT_SUCCESS);
-        } else if(choice == 1){
-            table_select(table);
-        } else if(choice == 2){
-            STUDENT* student = make_student();
-            table_insert(table, student);           
-        }        
+
+        switch(choice){
+            case 1:
+                table_select(table);
+                break;
+
+            case 2:
+                STUDENT* student = make_student();
+                table_insert(table, student);
+                break;
+
+            case 3:
+                char student_to_search_for[59];
+                printf("What student would you like to look for?\n");
+                scanf("%s", student_to_search_for);
+                search_for_student(table, student_to_search_for);
+                break;
+
+            case 4:
+                printf("Exiting program...");
+                db_close(table);
+                exit(EXIT_SUCCESS);
+                break;
+        }
     }
 }

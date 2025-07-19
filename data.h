@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -77,4 +78,6 @@ void table_insert(TABLE* table, STUDENT* student);
 void table_select(TABLE* table);
 STUDENT* make_student();
 SEMESTER* make_semesters(STUDENT* student);
+void to_upper_str(char* dest, const char* src);
+void search_for_student(TABLE* table, char* student_to_find);
 #endif

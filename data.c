@@ -201,7 +201,7 @@ void* row_slot(TABLE* table, int row_num){
 }
 
 void print_student(STUDENT* student){
-    printf("---------------\n");
+    printf("\n---------------------------------------------\n");
     
     printf("\nName:%s | Age: %d", student->name, student->age);
 
@@ -210,6 +210,7 @@ void print_student(STUDENT* student){
         for(int j=0; j<SUBJECTS_PER_SEMESTER; j++){
             printf("\n\tSubject name: %s | Grade: %d\n", student->semesters[i].subjects[j].name, student->semesters[i].subjects[j].grade);
         }
+        printf("____________________________________________");
     }
 }
 
@@ -283,4 +284,33 @@ SEMESTER* make_semesters(STUDENT* student){
     }
 
     return semester;
+}
+
+void to_upper_str(char* dest, const char* src){
+    for (int i = 0; src[i] != '\0'; i++) {
+        dest[i] = toupper((unsigned char)src[i]);
+    }
+    dest[strlen(src)] = '\0';
+}
+
+void search_for_student(TABLE* table, char* student_to_find){
+    STUDENT student;
+    char upper_input [STUDENT_NAME_SIZE];
+    bool found_student = false;
+    to_upper_str(upper_input, student_to_find);
+    for(int i=0; i<table->num_rows; i++){
+        deserialize_row(row_slot(table, i), &student);
+        char upper_name[STUDENT_NAME_SIZE];
+        to_upper_str(upper_name, student.name);
+
+        if(strcmp(upper_input, upper_name) == 0){
+            found_student = true;
+            print_student(&student);
+        }
+        free(student.semesters);
+    }
+
+    if(!found_student){
+        printf("Such a student doesnt exist");
+    }
 }
