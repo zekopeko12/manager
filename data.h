@@ -85,4 +85,5 @@ void to_upper_str(char* dest, const char* src);
 void search_for_student(TABLE* table, char* student_to_find);
 uint32_t get_next_student_id(TABLE* table);
 void edit_student(TABLE* table, uint32_t student_id);
+void delete_student(TABLE* table, uint32_t student_to_delete);
 #endif

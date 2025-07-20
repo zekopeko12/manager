@@ -233,10 +233,16 @@ void table_insert(TABLE* table, STUDENT* student){
 
 void table_select(TABLE* table){
     STUDENT student;
+    bool empty = true;
     for(int i=0; i<table->num_rows; i++){
         deserialize_row(row_slot(table, i), &student);
         print_student(&student);
+        empty = false;
         free(student.semesters);
+    }
+
+    if(empty){
+        printf("\nDatabse is empty");
     }
 }
 
@@ -247,8 +253,9 @@ STUDENT* make_student(){
         exit(EXIT_SUCCESS);
     }
 
+    getchar();
     printf("\nWhat is the name of the student?: ");
-    scanf("%59s", student->name);
+    fgets(student->name, 60, stdin);
     printf("\nHow old is the student?: ");
     scanf("%d", &student->age);
     printf("\nHow many semesters did the student attend?: ");
@@ -273,7 +280,8 @@ SEMESTER* make_semesters(STUDENT* student){
         printf("\nCurrently inputing %dth semester.", i+1);
         for(int j=0; j<SUBJECTS_PER_SEMESTER; j++){
             printf("\n\tName of subject: ");
-            scanf("%59s", semester[i].subjects[j].name);
+            getchar();
+            fgets(semester[i].subjects[j].name, 59, stdin);
             printf("\n\tGrade achieved: ");
 
             do{
@@ -354,7 +362,8 @@ void edit_student(TABLE* table, uint32_t student_id){
         switch(choice){
             case 1:
                 printf("\nInput new student name: ");
-                scanf("%s", editing_student.name);
+                getchar();
+                fgets(editing_student.name, 60, stdin);
                 break;
 
             case 2:
@@ -438,4 +447,19 @@ void edit_student(TABLE* table, uint32_t student_id){
 
     serialize_row(&editing_student, row_slot(table, student_id));
     free(editing_student.semesters);
+}
+
+void delete_student(TABLE* table, uint32_t student_to_delete){
+    if(student_to_delete < 0 || student_to_delete >= table->num_rows){
+        printf("Invalid student ID.\n");
+        return;
+    }
+
+    for(int i=student_to_delete; i<table->num_rows - 1; i++){
+        void* src = row_slot(table, i + 1);
+        void* dest = row_slot(table, i);
+        memcpy(dest, src, ROW_SIZE);
+    }
+
+    table->num_rows--;
 }

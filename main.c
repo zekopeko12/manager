@@ -14,7 +14,8 @@ int main(int argc, char *argv[]) {
         printf("\n2. Input students");
         printf("\n3. Search for student");
         printf("\n4. Edit student");
-        printf("\n5. Exit\n");
+        printf("\n5. Delete student");
+        printf("\n6. Exit\n");
 
         scanf("%d", &choice);
 
@@ -31,7 +32,8 @@ int main(int argc, char *argv[]) {
             case 3:
                 char student_to_search_for[60];
                 printf("What student would you like to look for?\n");
-                scanf("%s", student_to_search_for);
+                getchar();
+                fgets(student_to_search_for, 60, stdin);
                 search_for_student(table, student_to_search_for);
                 break;
 
@@ -44,6 +46,13 @@ int main(int argc, char *argv[]) {
                 break;
 
             case 5:
+                uint32_t student_to_delete;
+                printf("What student would you like to delete(ID)? ");
+                scanf("%d", &student_to_delete);
+                delete_student(table, student_to_delete - 1);
+                break;
+            
+            case 6:
                 printf("Exiting program...");
                 db_close(table);
                 exit(EXIT_SUCCESS);
